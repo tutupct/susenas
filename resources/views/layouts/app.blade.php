@@ -31,7 +31,8 @@
                 <ul class="navbar-nav ms-auto">
 
                     <li class="nav-item">
-                        <a href="#" class="nav-link {{ request()->routeIs('petugas.*') ? 'active' : '' }}">
+                        <a href="{{ route('petugas.index') }}"
+                            class="nav-link {{ request()->routeIs('petugas.*') ? 'active' : '' }}">
                             Petugas
                         </a>
                     </li>
@@ -49,6 +50,7 @@
     </nav>
 
     <main class="container py-4">
+        <x-alert />
         @yield('content')
     </main>
 
