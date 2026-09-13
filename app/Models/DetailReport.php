@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['report_id', 'keterangan_error', 'foto', 'status'])]
 class DetailReport extends Model
 {
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_TERKIRIM = 'terkirim';
+    public const STATUS_DIPERBAIKI = 'diperbaiki';
+    public const STATUS_SELESAI = 'selesai';
+
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);

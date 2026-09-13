@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DetailReport;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ return new class extends Migration
             $table->foreignId('report_id')->constrained();
             $table->text('keterangan_error');
             $table->string('foto')->nullable();
-            $table->string('status')->nullable();
+            $table->string('status')->default(DetailReport::STATUS_DRAFT);
             $table->timestamps();
         });
     }
