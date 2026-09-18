@@ -34,5 +34,11 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'gowa' => [
+        'url' => env('GOWA_URL'),
+        'device_id' => env('GOWA_DEVICE_ID'),
+        'username' => env('GOWA_USERNAME'),
+        'password' => env('GOWA_PASSWORD'),
+    ],
 
 ];
