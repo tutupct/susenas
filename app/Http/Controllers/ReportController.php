@@ -2,33 +2,113 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Petugas;
 use App\Models\Report;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $reports = Report::with('petugas')
+            ->withCount('detailReports')
+            ->orderBy('petugas_id')
+            ->orderBy('urutan')
+            ->get();
+
+        return view('reports.index', compact('reports'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('reports.manage', [
+            'petugas' => Petugas::orderBy('nama')->get()
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'petugas_id' => [
+                'required',
+                'integer',
+                'exists:petugas,id',
+            ],
+
+            'reports' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'reports.*.nama_krt' => [
+                'required',
+                'string',
+                'min:2',
+                'max:150',
+            ],
+
+            'reports.*.urutan' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+        ], [
+            'petugas_id.required' => 'Petugas wajib dipilih.',
+            'petugas_id.exists' => 'Petugas yang dipilih tidak valid.',
+
+            'reports.required' => 'Minimal satu KRT harus diisi.',
+            'reports.min' => 'Minimal satu KRT harus diisi.',
+
+            'reports.*.nama_krt.required' => 'Nama KRT wajib diisi.',
+            'reports.*.nama_krt.min' => 'Nama KRT minimal 2 karakter.',
+            'reports.*.nama_krt.max' => 'Nama KRT maksimal 150 karakter.',
+
+            'reports.*.urutan.required' => 'Urutan KRT wajib diisi.',
+            'reports.*.urutan.min' => 'Urutan KRT tidak valid.',
+        ]);
+
+        $petugas = Petugas::findOrFail($validated['petugas_id']);
+
+        /*
+     * Pastikan urutan tidak duplikat
+     */
+        $urutan = collect($validated['reports'])
+            ->pluck('urutan');
+
+        if ($urutan->count() !== $urutan->unique()->count()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'reports' => 'Terdapat urutan KRT yang duplikat.',
+                ]);
+        }
+
+        /*
+     * Simpan seluruh report dalam satu transaksi.
+     * Kalau satu gagal, semuanya dibatalkan.
+     */
+        DB::transaction(function () use ($validated, $petugas) {
+
+            foreach ($validated['reports'] as $item) {
+                Report::create([
+                    'petugas_id' => $petugas->id,
+                    'urutan' => $item['urutan'],
+                    'nama_krt' => trim($item['nama_krt']),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('reports.index')
+            ->with(
+                'success',
+                count($validated['reports']) .
+                    ' data KRT untuk petugas ' .
+                    $petugas->nama .
+                    ' berhasil disimpan.'
+            );
     }
 
     /**
