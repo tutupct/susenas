@@ -7,6 +7,7 @@ use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Services\GowaService;
 
 class DetailReportController extends Controller
 {
@@ -170,5 +171,87 @@ class DetailReportController extends Controller
         return redirect()
             ->route('reports.show', $report)
             ->with('success', 'Temuan berhasil dihapus.');
+    }
+
+    public function sendToWhatsApp(GowaService $gowa, Report $report, DetailReport $detailReport)
+    {
+        /*
+        * Pastikan detail report memang milik report
+        * yang dikirim di URL.
+        */
+        abort_unless($detailReport->report_id === $report->id, 404);
+
+        /*
+        * Untuk sekarang, hanya temuan draft yang boleh dikirim.
+        */
+        abort_unless($detailReport->status === DetailReport::STATUS_DRAFT, 403, 'Temuan sudah tidak berstatus draft.');
+
+        /*
+        * Ambil petugas beserta nomor WhatsApp-nya.
+        */
+        $report->loadMissing('petugas');
+
+        $petugas = $report->petugas;
+
+        abort_unless($petugas && $petugas->no_wa, 422, 'Petugas belum memiliki nomor WhatsApp.');
+
+        /*
+        * Susun pesan/caption yang akan dikirim.
+        */
+        $message = implode("\n", [
+            "Halo {$petugas->nama},",
+            "",
+            "Ada temuan pada data KRT: {$report->nama_krt}.",
+            "",
+            "Temuan:",
+            $detailReport->keterangan_error,
+        ]);
+
+        try {
+            /*
+            * Kalau ada foto, kirim sebagai gambar
+            * dengan message sebagai caption.
+            */
+            if ($detailReport->foto) {
+                $imagePath = Storage::disk('public')->path(
+                    $detailReport->foto
+                );
+
+                $response = $gowa->sendImage(
+                    $petugas->no_wa,
+                    $imagePath,
+                    $message
+                );
+            } else {
+                /*
+                * Kalau tidak ada foto, kirim pesan teks biasa.
+                */
+                $response = $gowa->sendMessage(
+                    $petugas->no_wa,
+                    $message
+                );
+            }
+
+            /*
+            * GOWA harus memberikan response sukses
+            * sebelum status temuan diubah.
+            */
+            if (! $response->successful()) {
+                throw new \RuntimeException(
+                    'GOWA gagal mengirim pesan: ' . $response->body()
+                );
+            }
+
+            $detailReport->update([
+                'status' => DetailReport::STATUS_TERKIRIM,
+            ]);
+        } catch (\Throwable $e) {
+            return back()->with(
+                'error',
+                'Pesan WhatsApp gagal dikirim: ' . $e->getMessage()
+            );
+        }
+
+        return back()->with('success', 'Temuan berhasil dikirim ke WhatsApp petugas.');
     }
 }
