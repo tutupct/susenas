@@ -163,7 +163,7 @@
             </div>
         @endforelse
 
-        <div class="card border-0 shadow-sm" x-data="{ showForm: false }">
+        <div class="card border-0 shadow-sm" x-data="detailReportForm()">
             <div class="card-body">
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -184,7 +184,7 @@
 
                 <div x-show="showForm" x-cloak class="mt-3">
 
-                    <form action="{{ route('reports.details.store', $report) }}" method="POST">
+                    <form action="{{ route('reports.details.store', $report) }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">
@@ -202,6 +202,27 @@
                             @enderror
                         </div>
 
+                        {{-- foto --}}
+                        <div class="mb-3">
+                            <label for="foto" class="form-label fw-semibold">
+                                Foto Pendukung
+                            </label>
+
+                            <input type="file" id="foto" name="foto"
+                                class="form-control @error('foto') is-invalid @enderror"
+                                accept="image/jpeg,image/png,image/webp" @change="handlePhotoChange($event)">
+
+                            <div class="form-text">
+                                JPG, JPEG, PNG, atau WEBP. Maksimal 5 MB.
+                            </div>
+
+                            @error('foto')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-light" @click="showForm = false">
                                 Batal
@@ -212,9 +233,64 @@
                             </button>
                         </div>
                     </form>
+                    <div x-show="previewUrl" x-cloak class="mb-3">
+                        <div class="text-muted small mb-2">
+                            Preview Foto
+                        </div>
+
+                        <div class="position-relative d-inline-block">
+                            <img :src="previewUrl" alt="Preview foto pendukung" class="img-fluid rounded border"
+                                style="max-height: 300px;">
+
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                                @click="removePhoto()" title="Hapus foto">
+                                &times;
+                            </button>
+                        </div>
+                    </div>
 
                 </div>
 
             </div>
         </div>
     @endsection
+    @push('scripts')
+        <script>
+            function detailReportForm() {
+                return {
+                    showForm: false,
+                    previewUrl: null,
+
+                    handlePhotoChange(event) {
+                        const file = event.target.files[0];
+
+                        if (!file) {
+                            this.removePhoto();
+                            return;
+                        }
+
+                        if (!file.type.startsWith('image/')) {
+                            this.removePhoto();
+                            return;
+                        }
+
+                        this.previewUrl = URL.createObjectURL(file);
+                    },
+
+                    removePhoto() {
+                        const input = document.getElementById('foto');
+
+                        if (input) {
+                            input.value = '';
+                        }
+
+                        if (this.previewUrl) {
+                            URL.revokeObjectURL(this.previewUrl);
+                        }
+
+                        this.previewUrl = null;
+                    }
+                }
+            }
+        </script>
+    @endpush
