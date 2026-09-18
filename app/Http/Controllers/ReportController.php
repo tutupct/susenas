@@ -132,12 +132,14 @@ class ReportController extends Controller
             );
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Report $report)
     {
-        //
+        $report->load([
+            'petugas',
+            'detailReports',
+        ]);
+
+        return view('reports.show', compact('report'));
     }
 
     public function edit(Petugas $petugas)
