@@ -136,4 +136,39 @@ class DetailReportController extends Controller
             ->route('reports.show', $report)
             ->with('success', 'Temuan berhasil diperbarui.');
     }
+
+    public function destroy(Report $report, DetailReport $detailReport)
+    {
+        /*
+        * Pastikan DetailReport memang milik Report
+        * yang dikirim di URL.
+        */
+        abort_unless(
+            $detailReport->report_id === $report->id,
+            404
+        );
+
+        /*
+        * Hanya temuan berstatus draft yang boleh dihapus.
+        */
+        abort_unless(
+            $detailReport->status === DetailReport::STATUS_DRAFT,
+            403
+        );
+
+        $fotoPath = $detailReport->foto;
+
+        $detailReport->delete();
+
+        /*
+        * Hapus file foto setelah record berhasil dihapus.
+        */
+        if ($fotoPath) {
+            Storage::disk('public')->delete($fotoPath);
+        }
+
+        return redirect()
+            ->route('reports.show', $report)
+            ->with('success', 'Temuan berhasil dihapus.');
+    }
 }

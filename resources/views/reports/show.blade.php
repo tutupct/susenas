@@ -136,6 +136,19 @@
                                 Edit
                             </button>
 
+                            @if ($detail->status === \App\Models\DetailReport::STATUS_DRAFT)
+                                <form action="{{ route('reports.details.destroy', [$report, $detail]) }}" method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus temuan ini? Foto pendukung juga akan dihapus.');">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Hapus
+                                    </button>
+                                </form>
+                            @endif
+
                         </div>
                     </div>
 
