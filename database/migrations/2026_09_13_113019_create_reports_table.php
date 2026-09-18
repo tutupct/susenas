@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('petugas_id')->constrained();
             $table->integer('urutan');
             $table->string('nama_krt');
+            $table->unique(['petugas_id', 'urutan']);
             $table->timestamps();
         });
     }

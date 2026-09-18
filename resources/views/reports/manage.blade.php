@@ -51,10 +51,6 @@
                                         Daftar KRT
                                     </label>
                                 </div>
-
-                                <button type="button" class="btn btn-sm btn-outline-primary" @click="addRow()">
-                                    + Tambah KRT
-                                </button>
                             </div>
 
                             <div class="table-responsive border rounded">

@@ -23,7 +23,9 @@ class ReportController extends Controller
     public function create()
     {
         return view('reports.manage', [
-            'petugas' => Petugas::orderBy('nama')->get()
+            'petugas' => Petugas::whereDoesntHave('reports')
+                ->orderBy('nama')
+                ->get()
         ]);
     }
 
@@ -70,6 +72,14 @@ class ReportController extends Controller
         ]);
 
         $petugas = Petugas::findOrFail($validated['petugas_id']);
+
+        if (Report::where('petugas_id', $petugas->id)->exists()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'petugas_id' => 'Petugas ini sudah memiliki daftar KRT.',
+                ]);
+        }
 
         /*
      * Pastikan urutan tidak duplikat
