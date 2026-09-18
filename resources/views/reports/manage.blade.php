@@ -12,18 +12,32 @@
                 </p>
             </div>
 
-            <div class="card border-0 shadow-sm" x-data="reportForm()">
+            <div class="card border-0 shadow-sm" x-data="reportForm(@js($initialRows))">
                 <div class="card-body p-4">
 
-                    <form action="{{ route('reports.store') }}" method="POST">
+                    @php
+                        $isEdit = $mode === 'edit';
+                    @endphp
+
+                    <form action="{{ $isEdit ? route('reports.update', $selectedPetugas) : route('reports.store') }}"
+                        method="POST">
+                        @csrf
+
+                        @if ($isEdit)
+                            @method('PUT')
+                        @endif
                         @csrf
 
                         {{-- Petugas --}}
-                        <div class="mb-4">
-                            <label for="petugas_id" class="form-label fw-semibold">
-                                Petugas
-                            </label>
+                        @if ($isEdit)
+                            <select class="form-select" disabled>
+                                <option selected>
+                                    {{ $selectedPetugas->nama }} — {{ $selectedPetugas->sls }}
+                                </option>
+                            </select>
 
+                            <input type="hidden" name="petugas_id" value="{{ $selectedPetugas->id }}">
+                        @else
                             <select id="petugas_id" name="petugas_id"
                                 class="form-select @error('petugas_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Petugas --</option>
@@ -40,7 +54,7 @@
                                     {{ $message }}
                                 </div>
                             @enderror
-                        </div>
+                        @endif
 
                         {{-- Daftar KRT --}}
                         <div class="mb-3">
@@ -72,7 +86,8 @@
 
                                                 <td class="text-center">
                                                     <span class="fw-semibold" x-text="index + 1"></span>
-
+                                                    <input type="hidden" :name="`reports[${index}][id]`"
+                                                        :value="row.id ?? ''">
                                                     <input type="hidden" :name="`reports[${index}][urutan]`"
                                                         :value="index + 1">
                                                 </td>
@@ -140,18 +155,26 @@
 
 @push('scripts')
     <script>
-        function reportForm() {
+        function reportForm(initialRows = []) {
             return {
-                rows: [{
-                    key: Date.now(),
-                    nama_krt: ''
-                }],
+                rows: initialRows.length ?
+                    initialRows.map((row, index) => ({
+                        id: row.id ?? null,
+                        key: row.id ?? `${Date.now()}-${index}`,
+                        nama_krt: row.nama_krt ?? ''
+                    })) : [{
+                        id: null,
+                        key: Date.now(),
+                        nama_krt: ''
+                    }],
 
                 addRow() {
                     this.rows.push({
+                        id: null,
                         key: Date.now() + Math.random(),
                         nama_krt: ''
                     });
+
                     this.$nextTick(() => {
                         const inputs = this.$root.querySelectorAll('input[type="text"]');
                         inputs[inputs.length - 1]?.focus();

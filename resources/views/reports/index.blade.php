@@ -71,6 +71,11 @@
                                 </td>
 
                                 <td>
+                                    <a href="{{ route('reports.edit', $report->petugas) }}"
+                                        class="btn btn-sm btn-outline-secondary">
+                                        Edit
+                                    </a>
+
                                     <a href="{{ route('reports.show', $report) }}" class="btn btn-sm btn-outline-primary">
                                         Detail
                                     </a>

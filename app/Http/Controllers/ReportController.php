@@ -23,9 +23,12 @@ class ReportController extends Controller
     public function create()
     {
         return view('reports.manage', [
+            'mode' => 'create',
             'petugas' => Petugas::whereDoesntHave('reports')
                 ->orderBy('nama')
-                ->get()
+                ->get(),
+            'selectedPetugas' => null,
+            'initialRows' => [],
         ]);
     }
 
@@ -134,20 +137,190 @@ class ReportController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Report $report)
+    public function edit(Petugas $petugas)
     {
-        //
+        $reports = $petugas->reports()
+            ->orderBy('urutan')
+            ->get();
+
+        if ($reports->isEmpty()) {
+            abort(404);
+        }
+
+        $initialRows = $reports->map(function ($report) {
+            return [
+                'id' => $report->id,
+                'nama_krt' => $report->nama_krt,
+            ];
+        })->values()->all();
+
+        return view('reports.manage', [
+            'mode' => 'edit',
+            'petugas' => collect([$petugas]),
+            'selectedPetugas' => $petugas,
+            'initialRows' => $initialRows,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Report $report)
+    public function update(Request $request, Petugas $petugas)
     {
-        //
+        $validated = $request->validate([
+            'reports' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'reports.*.id' => [
+                'nullable',
+                'integer',
+            ],
+
+            'reports.*.nama_krt' => [
+                'required',
+                'string',
+                'min:2',
+                'max:150',
+            ],
+
+            'reports.*.urutan' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+        ], [
+            'reports.required' => 'Minimal satu KRT harus diisi.',
+            'reports.min' => 'Minimal satu KRT harus diisi.',
+
+            'reports.*.nama_krt.required' => 'Nama KRT wajib diisi.',
+            'reports.*.nama_krt.min' => 'Nama KRT minimal 2 karakter.',
+            'reports.*.nama_krt.max' => 'Nama KRT maksimal 150 karakter.',
+
+            'reports.*.urutan.required' => 'Urutan KRT wajib diisi.',
+            'reports.*.urutan.min' => 'Urutan KRT tidak valid.',
+        ]);
+
+        $existingReports = $petugas->reports()
+            ->withCount('detailReports')
+            ->get()
+            ->keyBy('id');
+
+        $submittedIds = collect($validated['reports'])
+            ->pluck('id')
+            ->filter()
+            ->map(fn($id) => (int) $id);
+
+        /*
+     * Pastikan ID report yang dikirim memang milik petugas ini.
+     */
+        if ($submittedIds->diff($existingReports->keys())->isNotEmpty()) {
+            abort(403, 'Report tidak valid.');
+        }
+
+        /*
+     * Pastikan urutan 1, 2, 3, ..., N.
+     */
+        $urutan = collect($validated['reports'])
+            ->pluck('urutan')
+            ->sort()
+            ->values()
+            ->all();
+
+        $expected = range(1, count($urutan));
+
+        if ($urutan != $expected) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'reports' => 'Urutan KRT harus berurutan mulai dari 1 tanpa duplikat atau lompatan.',
+                ]);
+        }
+
+        /*
+     * Cari report yang dihapus dari form.
+     */
+        $deletedIds = $existingReports->keys()
+            ->diff($submittedIds);
+
+        /*
+     * Report yang sudah punya detail tidak boleh dihapus.
+     */
+        $cannotDelete = $existingReports
+            ->only($deletedIds->all())
+            ->filter(fn($report) => $report->detail_reports_count > 0);
+
+        if ($cannotDelete->isNotEmpty()) {
+            $nama = $cannotDelete
+                ->pluck('nama_krt')
+                ->join(', ');
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'reports' => "KRT berikut tidak dapat dihapus karena sudah memiliki temuan: {$nama}.",
+                ]);
+        }
+
+        DB::transaction(function () use (
+            $validated,
+            $petugas,
+            $existingReports,
+            $submittedIds,
+            $deletedIds
+        ) {
+
+            /*
+         * Hapus report yang memang dihapus dari form.
+         */
+            if ($deletedIds->isNotEmpty()) {
+                $petugas->reports()
+                    ->whereIn('id', $deletedIds->all())
+                    ->delete();
+            }
+
+            /*
+         * Kosongkan sementara urutan report lama
+         * agar tidak bentrok dengan unique(petugas_id, urutan).
+         */
+            foreach ($submittedIds as $id) {
+                $report = $existingReports->get($id);
+
+                if ($report) {
+                    $report->update([
+                        'urutan' => -$report->id,
+                    ]);
+                }
+            }
+
+            /*
+         * Update report lama / create report baru.
+         */
+            foreach ($validated['reports'] as $item) {
+
+                if (!empty($item['id'])) {
+
+                    $report = $existingReports->get((int) $item['id']);
+
+                    $report->update([
+                        'urutan' => $item['urutan'],
+                        'nama_krt' => trim($item['nama_krt']),
+                    ]);
+                } else {
+
+                    $petugas->reports()->create([
+                        'urutan' => $item['urutan'],
+                        'nama_krt' => trim($item['nama_krt']),
+                    ]);
+                }
+            }
+        });
+
+        return redirect()
+            ->route('reports.index')
+            ->with(
+                'success',
+                'Daftar KRT untuk petugas ' . $petugas->nama . ' berhasil diperbarui.'
+            );
     }
 
     /**
