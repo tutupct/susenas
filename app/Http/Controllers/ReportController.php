@@ -17,7 +17,9 @@ class ReportController extends Controller
             ->orderBy('urutan')
             ->get();
 
-        return view('reports.index', compact('reports'));
+        $reportGroups = $reports->groupBy('petugas_id');
+
+        return view('reports.index', compact('reportGroups'));
     }
 
     public function create()
@@ -89,13 +91,14 @@ class ReportController extends Controller
      */
         $urutan = collect($validated['reports'])
             ->pluck('urutan')
+            ->map(fn($value) => (int) $value)
             ->sort()
             ->values()
             ->all();
 
         $expected = range(1, count($urutan));
 
-        if ($urutan != $expected) {
+        if ($urutan !== $expected) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -174,6 +177,7 @@ class ReportController extends Controller
             'reports.*.id' => [
                 'nullable',
                 'integer',
+                'distinct'
             ],
 
             'reports.*.nama_krt' => [
@@ -222,13 +226,14 @@ class ReportController extends Controller
      */
         $urutan = collect($validated['reports'])
             ->pluck('urutan')
+            ->map(fn($value) => (int) $value)
             ->sort()
             ->values()
             ->all();
 
         $expected = range(1, count($urutan));
 
-        if ($urutan != $expected) {
+        if ($urutan !== $expected) {
             return back()
                 ->withInput()
                 ->withErrors([

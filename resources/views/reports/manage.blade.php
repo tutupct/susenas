@@ -21,8 +21,6 @@
 
                     <form action="{{ $isEdit ? route('reports.update', $selectedPetugas) : route('reports.store') }}"
                         method="POST">
-                        @csrf
-
                         @if ($isEdit)
                             @method('PUT')
                         @endif
