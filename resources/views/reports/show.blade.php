@@ -137,6 +137,16 @@
                             </button>
 
                             @if ($detail->status === \App\Models\DetailReport::STATUS_DRAFT)
+                                <form action="{{ route('reports.details.send', [$report, $detail]) }}" method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Kirim temuan ini ke WhatsApp petugas?');">
+                                    @csrf
+
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        Kirim WA
+                                    </button>
+                                </form>
+
                                 <form action="{{ route('reports.details.destroy', [$report, $detail]) }}" method="POST"
                                     class="d-inline"
                                     onsubmit="return confirm('Yakin ingin menghapus temuan ini? Foto pendukung juga akan dihapus.');">
