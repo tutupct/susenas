@@ -221,10 +221,25 @@
                                     {{ $message }}
                                 </div>
                             @enderror
+                            <div x-show="previewUrl" x-cloak class="mb-3">
+                                <div class="text-muted small mb-2">
+                                    Preview Foto
+                                </div>
+
+                                <div class="position-relative d-inline-block">
+                                    <img :src="previewUrl" alt="Preview foto pendukung" class="img-fluid rounded border"
+                                        style="max-height: 300px;">
+
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                                        @click="removePhoto()" title="Hapus foto">
+                                        &times;
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-light" @click="showForm = false">
+                            <button type="button" class="btn btn-light" @click="showForm = false; removePhoto()">
                                 Batal
                             </button>
 
@@ -233,21 +248,7 @@
                             </button>
                         </div>
                     </form>
-                    <div x-show="previewUrl" x-cloak class="mb-3">
-                        <div class="text-muted small mb-2">
-                            Preview Foto
-                        </div>
 
-                        <div class="position-relative d-inline-block">
-                            <img :src="previewUrl" alt="Preview foto pendukung" class="img-fluid rounded border"
-                                style="max-height: 300px;">
-
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
-                                @click="removePhoto()" title="Hapus foto">
-                                &times;
-                            </button>
-                        </div>
-                    </div>
 
                 </div>
 
@@ -269,9 +270,26 @@
                             return;
                         }
 
-                        if (!file.type.startsWith('image/')) {
+                        const allowedTypes = [
+                            'image/jpeg',
+                            'image/png',
+                            'image/webp',
+                        ];
+
+                        if (!allowedTypes.includes(file.type)) {
                             this.removePhoto();
+                            alert('Format foto harus JPG, JPEG, PNG, atau WEBP.');
                             return;
+                        }
+
+                        if (file.size > 5 * 1024 * 1024) {
+                            this.removePhoto();
+                            alert('Ukuran foto maksimal 5 MB.');
+                            return;
+                        }
+
+                        if (this.previewUrl) {
+                            URL.revokeObjectURL(this.previewUrl);
                         }
 
                         this.previewUrl = URL.createObjectURL(file);
