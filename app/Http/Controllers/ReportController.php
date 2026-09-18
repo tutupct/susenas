@@ -75,13 +75,18 @@ class ReportController extends Controller
      * Pastikan urutan tidak duplikat
      */
         $urutan = collect($validated['reports'])
-            ->pluck('urutan');
+            ->pluck('urutan')
+            ->sort()
+            ->values()
+            ->all();
 
-        if ($urutan->count() !== $urutan->unique()->count()) {
+        $expected = range(1, count($urutan));
+
+        if ($urutan != $expected) {
             return back()
                 ->withInput()
                 ->withErrors([
-                    'reports' => 'Terdapat urutan KRT yang duplikat.',
+                    'reports' => 'Urutan KRT harus berurutan mulai dari 1 tanpa duplikat atau lompatan.',
                 ]);
         }
 

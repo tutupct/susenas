@@ -84,7 +84,7 @@
                                                 <td>
                                                     <input type="text" class="form-control"
                                                         :name="`reports[${index}][nama_krt]`" x-model="row.nama_krt"
-                                                        placeholder="Masukkan nama KRT">
+                                                        placeholder="Masukkan nama KRT" required>
                                                 </td>
 
                                                 <td class="text-center">
@@ -95,14 +95,15 @@
                                                     </button>
 
                                                 </td>
-
                                             </tr>
                                         </template>
-
                                     </tbody>
-
                                 </table>
-
+                            </div>
+                            <div class="mt-2 d-flex justify-content-end">
+                                <button type="button" class="btn btn-sm btn-outline-primary" @click="addRow()">
+                                    + Tambah KRT
+                                </button>
                             </div>
 
                             <div class="form-text mt-2">
@@ -154,6 +155,10 @@
                     this.rows.push({
                         key: Date.now() + Math.random(),
                         nama_krt: ''
+                    });
+                    this.$nextTick(() => {
+                        const inputs = this.$root.querySelectorAll('input[type="text"]');
+                        inputs[inputs.length - 1]?.focus();
                     });
                 },
 
