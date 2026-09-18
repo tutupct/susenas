@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DetailReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,3 +17,5 @@ Route::get('/reports/petugas/{petugas}/edit', [ReportController::class, 'edit'])
 Route::put('/reports/petugas/{petugas}', [ReportController::class, 'update'])->name('reports.update');
 Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
 Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+
+Route::post('/reports/{report}/details', [DetailReportController::class, 'store'])->name('reports.details.store');

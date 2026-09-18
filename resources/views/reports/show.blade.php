@@ -162,4 +162,59 @@
                 </div>
             </div>
         @endforelse
+
+        <div class="card border-0 shadow-sm" x-data="{ showForm: false }">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="h5 mb-1">
+                            Tambah Temuan
+                        </h2>
+
+                        <div class="text-muted small">
+                            Tambahkan temuan baru untuk KRT ini.
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-primary" @click="showForm = !showForm">
+                        + Tambah Temuan
+                    </button>
+                </div>
+
+                <div x-show="showForm" x-cloak class="mt-3">
+
+                    <form action="{{ route('reports.details.store', $report) }}" method="POST">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label for="keterangan_error" class="form-label fw-semibold">
+                                Keterangan Temuan
+                            </label>
+
+                            <textarea id="keterangan_error" name="keterangan_error" class="form-control" rows="4"
+                                placeholder="Jelaskan temuan atau kesalahan..." required>{{ old('keterangan_error') }}</textarea>
+
+                            @error('keterangan_error')
+                                <div class="text-danger small mt-1">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-light" @click="showForm = false">
+                                Batal
+                            </button>
+
+                            <button type="submit" class="btn btn-primary">
+                                Simpan Temuan
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
     @endsection
