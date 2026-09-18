@@ -19,3 +19,5 @@ Route::get('/reports/{report}', [ReportController::class, 'show'])->name('report
 Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
 
 Route::post('/reports/{report}/details', [DetailReportController::class, 'store'])->name('reports.details.store');
+
+Route::put('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'update'])->name('reports.details.update');
