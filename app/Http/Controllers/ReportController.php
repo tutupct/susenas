@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreReportRequest;
 use App\Models\Petugas;
 use App\Models\Report;
 use Illuminate\Http\Request;
@@ -34,47 +35,9 @@ class ReportController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreReportRequest $request)
     {
-        $validated = $request->validate([
-            'petugas_id' => [
-                'required',
-                'integer',
-                'exists:petugas,id',
-            ],
-
-            'reports' => [
-                'required',
-                'array',
-                'min:1',
-            ],
-
-            'reports.*.nama_krt' => [
-                'required',
-                'string',
-                'min:2',
-                'max:150',
-            ],
-
-            'reports.*.urutan' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-        ], [
-            'petugas_id.required' => 'Petugas wajib dipilih.',
-            'petugas_id.exists' => 'Petugas yang dipilih tidak valid.',
-
-            'reports.required' => 'Minimal satu KRT harus diisi.',
-            'reports.min' => 'Minimal satu KRT harus diisi.',
-
-            'reports.*.nama_krt.required' => 'Nama KRT wajib diisi.',
-            'reports.*.nama_krt.min' => 'Nama KRT minimal 2 karakter.',
-            'reports.*.nama_krt.max' => 'Nama KRT maksimal 150 karakter.',
-
-            'reports.*.urutan.required' => 'Urutan KRT wajib diisi.',
-            'reports.*.urutan.min' => 'Urutan KRT tidak valid.',
-        ]);
+        $validated = $request->validated();
 
         $petugas = Petugas::findOrFail($validated['petugas_id']);
 
@@ -87,8 +50,8 @@ class ReportController extends Controller
         }
 
         /*
-     * Pastikan urutan tidak duplikat
-     */
+        * Pastikan urutan tidak duplikat
+        */
         $urutan = collect($validated['reports'])
             ->pluck('urutan')
             ->map(fn($value) => (int) $value)
@@ -107,11 +70,10 @@ class ReportController extends Controller
         }
 
         /*
-     * Simpan seluruh report dalam satu transaksi.
-     * Kalau satu gagal, semuanya dibatalkan.
-     */
+        * Simpan seluruh report dalam satu transaksi.
+        * Kalau satu gagal, semuanya dibatalkan.
+        */
         DB::transaction(function () use ($validated, $petugas) {
-
             foreach ($validated['reports'] as $item) {
                 Report::create([
                     'petugas_id' => $petugas->id,
@@ -121,15 +83,7 @@ class ReportController extends Controller
             }
         });
 
-        return redirect()
-            ->route('reports.index')
-            ->with(
-                'success',
-                count($validated['reports']) .
-                    ' data KRT untuk petugas ' .
-                    $petugas->nama .
-                    ' berhasil disimpan.'
-            );
+        return redirect()->route('reports.index')->with('success', count($validated['reports']) . ' data KRT untuk petugas ' . $petugas->nama . ' berhasil disimpan.');
     }
 
     public function show(Report $report)
