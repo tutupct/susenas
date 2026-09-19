@@ -28,7 +28,7 @@
             </button>
 
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
 
                     <li class="nav-item">
                         <a href="{{ route('petugas.index') }}"
@@ -42,6 +42,16 @@
                             class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                             Report
                         </a>
+                    </li>
+
+                    <li class="nav-item ms-lg-2">
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+
+                            <button type="submit" class="btn btn-sm btn-outline-light">
+                                Logout
+                            </button>
+                        </form>
                     </li>
 
                 </ul>

@@ -1,27 +1,33 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DetailReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('layouts.app');
+
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::resource('/petugas', PetugasController::class);
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    Route::get('/reports/petugas/{petugas}/edit', [ReportController::class, 'edit'])->name('reports.edit');
+    Route::put('/reports/petugas/{petugas}', [ReportController::class, 'update'])->name('reports.update');
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+
+    Route::post('/reports/{report}/details', [DetailReportController::class, 'store'])->name('reports.details.store');
+
+    Route::put('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'update'])->name('reports.details.update');
+    Route::put('/reports/{report}/details/{detailReport}/response', [DetailReportController::class, 'recordResponse'])->name('reports.details.response');
+    Route::put('/reports/{report}/details/{detailReport}/complete', [DetailReportController::class, 'markAsCompleted'])->name('reports.details.complete');
+    Route::delete('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'destroy'])->name('reports.details.destroy');
+    Route::post('/reports/{report}/details/{detailReport}/send', [DetailReportController::class, 'sendToWhatsApp'])->name('reports.details.send');
 });
-Route::resource('/petugas', PetugasController::class);
-
-Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
-Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
-Route::get('/reports/petugas/{petugas}/edit', [ReportController::class, 'edit'])->name('reports.edit');
-Route::put('/reports/petugas/{petugas}', [ReportController::class, 'update'])->name('reports.update');
-Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
-Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
-
-Route::post('/reports/{report}/details', [DetailReportController::class, 'store'])->name('reports.details.store');
-
-Route::put('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'update'])->name('reports.details.update');
-Route::put('/reports/{report}/details/{detailReport}/response', [DetailReportController::class, 'recordResponse'])->name('reports.details.response');
-Route::put('/reports/{report}/details/{detailReport}/complete', [DetailReportController::class, 'markAsCompleted'])->name('reports.details.complete');
-Route::delete('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'destroy'])->name('reports.details.destroy');
-Route::post('/reports/{report}/details/{detailReport}/send', [DetailReportController::class, 'sendToWhatsApp'])->name('reports.details.send');
