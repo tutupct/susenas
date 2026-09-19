@@ -1,15 +1,15 @@
 <?php
 
-namespace AppHttpControllers;
+namespace App\Http\Controllers;
 
-use AppHttpRequestsStoreReportRequest;
-use AppHttpRequestsUpdateReportRequest;
-use AppModelsDetailReport;
-use AppModelsPetugas;
-use AppModelsReport;
-use IlluminateHttpRequest;
-use IlluminateSupportFacadesDB;
-use IlluminateValidationRule;
+use App\Http\Requests\StoreReportRequest;
+use App\Http\Requests\UpdateReportRequest;
+use App\Models\DetailReport;
+use App\Models\Petugas;
+use App\Models\Report;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
 {
