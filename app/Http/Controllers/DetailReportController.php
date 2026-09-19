@@ -286,4 +286,27 @@ class DetailReportController extends Controller
             'Respons petugas berhasil dicatat dan temuan ditandai sebagai diperbaiki.'
         );
     }
+
+    public function markAsCompleted(Report $report, DetailReport $detailReport)
+    {
+        abort_unless(
+            $detailReport->report_id === $report->id,
+            404
+        );
+
+        abort_unless(
+            $detailReport->status === DetailReport::STATUS_DIPERBAIKI,
+            403,
+            'Temuan belum siap ditandai selesai.'
+        );
+
+        $detailReport->update([
+            'status' => DetailReport::STATUS_SELESAI,
+        ]);
+
+        return back()->with(
+            'success',
+            'Temuan berhasil ditandai sebagai selesai.'
+        );
+    }
 }

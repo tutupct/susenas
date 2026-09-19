@@ -231,6 +231,15 @@
                                         Edit Respons
                                     </button>
                                 </div>
+                                <form action="{{ route('reports.details.complete', [$report, $detail]) }}" method="POST"
+                                    class="d-inline" onsubmit="return confirm('Tandai temuan ini sebagai selesai?');">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        Tandai Selesai
+                                    </button>
+                                </form>
                             </div>
 
                             <div x-show="editingResponse" x-cloak>
