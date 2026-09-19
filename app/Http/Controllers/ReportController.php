@@ -1,26 +1,79 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace AppHttpControllers;
 
-use App\Http\Requests\StoreReportRequest;
-use App\Http\Requests\UpdateReportRequest;
-use App\Models\Petugas;
-use App\Models\Report;
-use Illuminate\Support\Facades\DB;
+use AppHttpRequestsStoreReportRequest;
+use AppHttpRequestsUpdateReportRequest;
+use AppModelsDetailReport;
+use AppModelsPetugas;
+use AppModelsReport;
+use IlluminateHttpRequest;
+use IlluminateSupportFacadesDB;
+use IlluminateValidationRule;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $reports = Report::with('petugas')
+        $validated = $request->validate([
+            'q' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+            'filter' => [
+                'nullable',
+                Rule::in([
+                    'all',
+                    'with_findings',
+                    'without_findings',
+                ]),
+            ],
+        ]);
+
+        $search = trim($validated['q'] ?? '');
+        $filter = $validated['filter'] ?? 'all';
+
+        $reportsQuery = Report::query()
+            ->with('petugas')
             ->withCount('detailReports')
             ->orderBy('petugas_id')
-            ->orderBy('urutan')
-            ->get();
+            ->orderBy('urutan');
+
+        if ($search !== '') {
+            $reportsQuery->where(function ($query) use ($search) {
+                $query
+                    ->where('nama_krt', 'like', "%{$search}%")
+                    ->orWhereHas('petugas', function ($petugasQuery) use ($search) {
+                        $petugasQuery
+                            ->where('nama', 'like', "%{$search}%")
+                            ->orWhere('sls', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        match ($filter) {
+            'with_findings' => $reportsQuery->has('detailReports'),
+            'without_findings' => $reportsQuery->doesntHave('detailReports'),
+            default => null,
+        };
+
+        $reports = $reportsQuery->get();
 
         $reportGroups = $reports->groupBy('petugas_id');
 
-        return view('reports.index', compact('reportGroups'));
+        $stats = [
+            'total_krt' => Report::count(),
+            'krt_with_findings' => Report::has('detailReports')->count(),
+            'total_findings' => DetailReport::count(),
+        ];
+
+        return view('reports.index', compact(
+            'reportGroups',
+            'search',
+            'filter',
+            'stats',
+        ));
     }
 
     public function create()
