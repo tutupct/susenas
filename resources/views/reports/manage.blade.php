@@ -4,7 +4,6 @@
     <div class="row justify-content-center">
         <div class="col-lg-9 col-xl-8">
 
-
             <div class="mb-4">
                 <h1 class="h3 mb-1">Kelola KRT</h1>
                 <p class="text-muted mb-0">
@@ -62,11 +61,13 @@
                                     <label class="form-label fw-semibold mb-0">
                                         Daftar KRT
                                     </label>
+                                    <div class="form-text">
+                                        Tarik baris untuk mengubah urutan KRT.
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="table-responsive border rounded">
-
                                 <table class="table table-hover align-middle mb-0">
 
                                     <thead class="table-light">
@@ -77,13 +78,21 @@
                                         </tr>
                                     </thead>
 
-                                    <tbody>
-
+                                    <tbody x-sort="reorder">
                                         <template x-for="(row, index) in rows" :key="row.key">
-                                            <tr>
+                                            <tr x-sort:item="row.key">
 
                                                 <td class="text-center">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary me-1"
+                                                        x-sort:handle
+                                                        title="Geser"
+                                                        aria-label="Geser KRT">
+                                                        ☰
+                                                    </button>
+
                                                     <span class="fw-semibold" x-text="index + 1"></span>
+
                                                     <input type="hidden" :name="`reports[${index}][id]`"
                                                         :value="row.id ?? ''">
                                                     <input type="hidden" :name="`reports[${index}][urutan]`"
@@ -92,23 +101,26 @@
 
                                                 <td>
                                                     <input type="text" class="form-control"
-                                                        :name="`reports[${index}][nama_krt]`" x-model="row.nama_krt"
+                                                        :name="`reports[${index}][nama_krt]`"
+                                                        x-model="row.nama_krt"
                                                         placeholder="Masukkan nama KRT" required>
                                                 </td>
 
                                                 <td class="text-center">
-
                                                     <button type="button" class="btn btn-sm btn-outline-danger"
-                                                        @click="removeRow(index)" x-show="rows.length > 1" title="Hapus">
+                                                        @click="removeRow(index)"
+                                                        x-show="rows.length > 1"
+                                                        title="Hapus">
                                                         &times;
                                                     </button>
-
                                                 </td>
+
                                             </tr>
                                         </template>
                                     </tbody>
                                 </table>
                             </div>
+
                             <div class="mt-2 d-flex justify-content-end">
                                 <button type="button" class="btn btn-sm btn-outline-primary" @click="addRow()">
                                     + Tambah KRT
@@ -116,7 +128,7 @@
                             </div>
 
                             <div class="form-text mt-2">
-                                Urutan akan dibuat otomatis berdasarkan posisi baris.
+                                Urutan hanya berubah di form. Klik Simpan untuk menyimpan perubahan ke database.
                             </div>
 
                             @error('reports')
@@ -146,8 +158,6 @@
             </div>
 
         </div>
-
-
     </div>
 @endsection
 
@@ -165,6 +175,20 @@
                         key: Date.now(),
                         nama_krt: ''
                     }],
+
+                reorder(item, position) {
+                    const fromIndex = this.rows.findIndex(
+                        row => String(row.key) === String(item)
+                    );
+
+                    if (fromIndex === -1) {
+                        return;
+                    }
+
+                    const [row] = this.rows.splice(fromIndex, 1);
+
+                    this.rows.splice(position, 0, row);
+                },
 
                 addRow() {
                     this.rows.push({
