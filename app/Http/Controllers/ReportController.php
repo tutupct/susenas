@@ -60,8 +60,6 @@ class ReportController extends Controller
 
         $reports = $reportsQuery->get();
 
-        $reportGroups = $reports->groupBy('petugas_id');
-
         $stats = [
             'total_krt' => Report::count(),
             'krt_with_findings' => Report::has('detailReports')->count(),
@@ -69,7 +67,7 @@ class ReportController extends Controller
         ];
 
         return view('reports.index', compact(
-            'reportGroups',
+            'reports',
             'search',
             'filter',
             'stats',
