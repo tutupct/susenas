@@ -3,10 +3,8 @@
 @section('content')
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Daftar Report</h1>
-            <p class="text-muted mb-0">
-                Daftar KRT yang sedang divalidasi.
-            </p>
+            <h1 class="h3 mb-1">Daftar KRT</h1>
+            <p class="text-muted mb-0">Pantau temuan per KRT dan lanjutkan validasi dari sini.</p>
         </div>
 
         <a href="{{ route('reports.create') }}" class="btn btn-primary">
@@ -18,7 +16,7 @@
         <div class="col-6 col-lg-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small mb-1">Total KRT</div>
+                    <div class="text-muted small">Total KRT</div>
                     <div class="fs-4 fw-semibold">{{ number_format($stats['total_krt']) }}</div>
                 </div>
             </div>
@@ -27,10 +25,8 @@
         <div class="col-6 col-lg-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small mb-1">KRT Ada Temuan</div>
-                    <div class="fs-4 fw-semibold text-danger">
-                        {{ number_format($stats['krt_with_findings']) }}
-                    </div>
+                    <div class="text-muted small">KRT Ada Temuan</div>
+                    <div class="fs-4 fw-semibold text-danger">{{ number_format($stats['krt_with_findings']) }}</div>
                 </div>
             </div>
         </div>
@@ -38,10 +34,8 @@
         <div class="col-12 col-lg-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small mb-1">Total Temuan</div>
-                    <div class="fs-4 fw-semibold">
-                        {{ number_format($stats['total_findings']) }}
-                    </div>
+                    <div class="text-muted small">Total Temuan</div>
+                    <div class="fs-4 fw-semibold">{{ number_format($stats['total_findings']) }}</div>
                 </div>
             </div>
         </div>
@@ -52,35 +46,29 @@
             <form method="GET" action="{{ route('reports.index') }}">
                 <div class="row g-2">
                     <div class="col-md-7">
-                        <label for="search" class="visually-hidden">Cari</label>
                         <input
                             type="search"
-                            id="search"
                             name="q"
                             value="{{ $search }}"
                             class="form-control"
                             placeholder="Cari nama KRT, petugas, atau SLS..."
+                            aria-label="Cari KRT"
                         >
                     </div>
 
                     <div class="col-md-3">
-                        <label for="filter" class="visually-hidden">Filter temuan</label>
-                        <select id="filter" name="filter" class="form-select">
-                            <option value="all" @selected($filter === 'all')>Semua KRT</option>
+                        <select name="filter" class="form-select" aria-label="Filter temuan">
+                            <option value="all" @selected($filter === 'all')>Semua</option>
                             <option value="with_findings" @selected($filter === 'with_findings')>Ada temuan</option>
                             <option value="without_findings" @selected($filter === 'without_findings')>Belum ada temuan</option>
                         </select>
                     </div>
 
                     <div class="col-md-2 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-grow-1">
-                            Cari
-                        </button>
+                        <button type="submit" class="btn btn-primary flex-grow-1">Cari</button>
 
                         @if ($search !== '' || $filter !== 'all')
-                            <a href="{{ route('reports.index') }}" class="btn btn-light" title="Reset filter">
-                                Reset
-                            </a>
+                            <a href="{{ route('reports.index') }}" class="btn btn-light">Reset</a>
                         @endif
                     </div>
                 </div>
@@ -88,114 +76,101 @@
         </div>
     </div>
 
-    @forelse ($reportGroups as $reports)
-        @php
-            $petugas = $reports->first()->petugas;
-            $totalTemuan = $reports->sum('detail_reports_count');
-            $krtDenganTemuan = $reports->where('detail_reports_count', '>', 0)->count();
-            $groupId = 'petugas-' . $petugas->id;
-        @endphp
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4" width="80">Urutan</th>
+                        <th>KRT</th>
+                        <th>Petugas</th>
+                        <th width="130">Temuan</th>
+                        <th width="270">Status Temuan</th>
+                        <th width="100" class="pe-4">Aksi</th>
+                    </tr>
+                </thead>
 
-        <div class="card border-0 shadow-sm mb-3" x-data="{ open: true }">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <h2 class="h5 mb-0">{{ $petugas->nama }}</h2>
+                <tbody>
+                    @forelse ($reports as $report)
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-semibold">{{ $report->urutan }}</span>
+                            </td>
 
-                            @if ($krtDenganTemuan > 0)
-                                <span class="badge text-bg-danger">
-                                    {{ $krtDenganTemuan }} KRT perlu dicek
-                                </span>
-                            @else
-                                <span class="badge text-bg-success">Tidak ada temuan</span>
-                            @endif
-                        </div>
+                            <td>
+                                <div class="fw-semibold">{{ $report->nama_krt }}</div>
+                                <div class="text-muted small">SLS: {{ $report->petugas->sls }}</div>
+                            </td>
 
-                        <div class="text-muted small mt-1">
-                            SLS: {{ $petugas->sls }}
-                            · {{ $reports->count() }} KRT
-                            · {{ $totalTemuan }} temuan
-                        </div>
-                    </div>
+                            <td>
+                                <div>{{ $report->petugas->nama }}</div>
+                            </td>
 
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('reports.edit', $petugas) }}"
-                            class="btn btn-sm btn-outline-secondary">
-                            Edit KRT
-                        </a>
+                            <td>
+                                @if ($report->detail_reports_count > 0)
+                                    <span class="badge text-bg-danger">
+                                        {{ $report->detail_reports_count }} temuan
+                                    </span>
+                                @else
+                                    <span class="text-muted small">Tidak ada</span>
+                                @endif
+                            </td>
 
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-outline-secondary"
-                            @click="open = !open"
-                            :aria-expanded="open.toString()"
-                            aria-controls="{{ $groupId }}"
-                            x-text="open ? 'Tutup' : 'Lihat'"
-                        ></button>
-                    </div>
-                </div>
+                            <td>
+                                @if ($report->detail_reports_count > 0)
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @if ($report->draft_count > 0)
+                                            <span class="badge text-bg-secondary">{{ $report->draft_count }} draft</span>
+                                        @endif
 
-                <div id="{{ $groupId }}" x-show="open" class="mt-3">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="80">Urutan</th>
-                                    <th>Nama KRT</th>
-                                    <th width="140">Temuan</th>
-                                    <th width="100">Aksi</th>
-                                </tr>
-                            </thead>
+                                        @if ($report->terkirim_count > 0)
+                                            <span class="badge text-bg-warning">{{ $report->terkirim_count }} terkirim</span>
+                                        @endif
 
-                            <tbody>
-                                @foreach ($reports as $report)
-                                    <tr>
-                                        <td>{{ $report->urutan }}</td>
+                                        @if ($report->diperbaiki_count > 0)
+                                            <span class="badge text-bg-info">{{ $report->diperbaiki_count }} diperbaiki</span>
+                                        @endif
 
-                                        <td>
-                                            <span class="fw-semibold">{{ $report->nama_krt }}</span>
-                                        </td>
+                                        @if ($report->selesai_count > 0)
+                                            <span class="badge text-bg-success">{{ $report->selesai_count }} selesai</span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="text-muted small">Belum ada temuan</span>
+                                @endif
+                            </td>
 
-                                        <td>
-                                            @if ($report->detail_reports_count > 0)
-                                                <span class="badge text-bg-danger">
-                                                    {{ $report->detail_reports_count }} temuan
-                                                </span>
-                                            @else
-                                                <span class="text-muted small">Tidak ada</span>
-                                            @endif
-                                        </td>
-
-                                        <td>
-                                            <a href="{{ route('reports.show', $report) }}"
-                                                class="btn btn-sm btn-outline-primary">
-                                                Detail
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+                            <td class="pe-4">
+                                <a href="{{ route('reports.show', $report) }}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                @if ($search !== '' || $filter !== 'all')
+                                    Tidak ada KRT yang sesuai dengan filter.
+                                @else
+                                    Belum ada report.
+                                @endif
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    @empty
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
+
+        @if ($reports->isNotEmpty())
+            <div class="card-footer bg-white border-top text-muted small">
+                Menampilkan {{ $reports->count() }} KRT
                 @if ($search !== '' || $filter !== 'all')
-                    <div class="text-muted">Tidak ada KRT yang sesuai dengan filter.</div>
-                    <a href="{{ route('reports.index') }}" class="btn btn-light btn-sm mt-3">
-                        Reset Filter
-                    </a>
+                    sesuai filter.
                 @else
-                    <div class="text-muted">Belum ada report.</div>
-                    <a href="{{ route('reports.create') }}" class="btn btn-primary btn-sm mt-3">
-                        + Tambah Report
-                    </a>
+                    .
                 @endif
             </div>
-        </div>
-    @endforelse
+        @endif
+    </div>
 @endsection
