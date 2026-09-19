@@ -21,5 +21,6 @@ Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('
 Route::post('/reports/{report}/details', [DetailReportController::class, 'store'])->name('reports.details.store');
 
 Route::put('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'update'])->name('reports.details.update');
+Route::put('/reports/{report}/details/{detailReport}/response', [DetailReportController::class, 'recordResponse'])->name('reports.details.response');
 Route::delete('/reports/{report}/details/{detailReport}', [DetailReportController::class, 'destroy'])->name('reports.details.destroy');
 Route::post('/reports/{report}/details/{detailReport}/send', [DetailReportController::class, 'sendToWhatsApp'])->name('reports.details.send');

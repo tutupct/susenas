@@ -189,6 +189,85 @@
                             </div>
                         @endif
                     </div>
+                    {{-- Respons Petugas --}}
+                    <div class="mt-4" x-data="{ editingResponse: false }">
+
+                        <div class="text-muted small mb-2">
+                            Respons Petugas
+                        </div>
+
+                        {{-- TERKIRIM: form input respons --}}
+                        @if ($detail->status === \App\Models\DetailReport::STATUS_TERKIRIM)
+                            <form action="{{ route('reports.details.response', [$report, $detail]) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <textarea name="respon_petugas" class="form-control @error('respon_petugas') is-invalid @enderror" rows="4"
+                                    placeholder="Masukkan jawaban atau data yang diberikan petugas..." required>{{ old('respon_petugas', $detail->respon_petugas) }}</textarea>
+
+                                @error('respon_petugas')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        Simpan Respons
+                                    </button>
+                                </div>
+                            </form>
+
+                            {{-- DIPERBAIKI: tampilkan respons + bisa diedit --}}
+                        @elseif ($detail->status === \App\Models\DetailReport::STATUS_DIPERBAIKI)
+                            <div x-show="!editingResponse">
+                                <div class="bg-light border rounded p-3">
+                                    {!! nl2br(e($detail->respon_petugas)) !!}
+                                </div>
+
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        @click="editingResponse = true">
+                                        Edit Respons
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div x-show="editingResponse" x-cloak>
+                                <form action="{{ route('reports.details.response', [$report, $detail]) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <textarea name="respon_petugas" class="form-control @error('respon_petugas') is-invalid @enderror" rows="4"
+                                        required>{{ old('respon_petugas', $detail->respon_petugas) }}</textarea>
+
+                                    @error('respon_petugas')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                    <div class="d-flex justify-content-end gap-2 mt-2">
+                                        <button type="button" class="btn btn-sm btn-light"
+                                            @click="editingResponse = false">
+                                            Batal
+                                        </button>
+
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            Simpan Perubahan
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {{-- SELESAI --}}
+                        @elseif ($detail->status === \App\Models\DetailReport::STATUS_SELESAI)
+                            <div class="bg-light border rounded p-3">
+                                {!! nl2br(e($detail->respon_petugas)) !!}
+                            </div>
+                        @endif
+
+                    </div>
 
                 </div>
 
