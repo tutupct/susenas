@@ -68,8 +68,11 @@
     {{-- Bootstrap JS --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
+    {{-- Alpine Sort Plugin --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.17.3/dist/cdn.min.js"></script>
+
     {{-- Alpine.js --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.3/dist/cdn.min.js"></script>
 
     @stack('scripts')
 
