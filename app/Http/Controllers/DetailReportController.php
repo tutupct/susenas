@@ -53,7 +53,7 @@ class DetailReportController extends Controller
             ->with('success', 'Temuan berhasil ditambahkan.');
     }
 
-    public function update(Request $request,        Report $report, DetailReport $detailReport)
+    public function update(Request $request, Report $report, DetailReport $detailReport)
     {
         abort_unless($detailReport->report_id === $report->id, 404);
         abort_unless($detailReport->status === DetailReport::STATUS_DRAFT, 403, 'Temuan yang sudah dikirim tidak dapat diedit.');
@@ -242,5 +242,48 @@ class DetailReportController extends Controller
         }
 
         return back()->with('success', 'Temuan berhasil dikirim ke WhatsApp petugas.');
+    }
+
+    public function recordResponse(Request $request, Report $report, DetailReport $detailReport)
+    {
+        abort_unless(
+            $detailReport->report_id === $report->id,
+            404
+        );
+
+        abort_unless(
+            in_array(
+                $detailReport->status,
+                [
+                    DetailReport::STATUS_TERKIRIM,
+                    DetailReport::STATUS_DIPERBAIKI,
+                ],
+                true
+            ),
+            403,
+            'Respons petugas belum dapat dicatat untuk temuan ini.'
+        );
+
+        $validated = $request->validate([
+            'respon_petugas' => [
+                'required',
+                'string',
+                'min:1',
+                'max:5000',
+            ],
+        ], [
+            'respon_petugas.required' => 'Respons petugas wajib diisi.',
+            'respon_petugas.max' => 'Respons petugas maksimal 5000 karakter.',
+        ]);
+
+        $detailReport->update([
+            'respon_petugas' => trim($validated['respon_petugas']),
+            'status' => DetailReport::STATUS_DIPERBAIKI,
+        ]);
+
+        return back()->with(
+            'success',
+            'Respons petugas berhasil dicatat dan temuan ditandai sebagai diperbaiki.'
+        );
     }
 }

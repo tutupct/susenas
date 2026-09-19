@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['report_id', 'keterangan_error', 'foto', 'status'])]
+#[Fillable(['report_id', 'keterangan_error', 'foto', 'respon_petugas', 'status'])]
 class DetailReport extends Model
 {
     public const STATUS_DRAFT = 'draft';
