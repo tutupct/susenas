@@ -18,7 +18,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
 
-            <a class="navbar-brand fw-bold" href="#">
+            <a class="navbar-brand fw-bold" href="{{ url('/') }}">
                 Validasi Susenas
             </a>
 
@@ -38,7 +38,8 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="#" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                        <a href="{{ route('reports.index') }}"
+                            class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                             Report
                         </a>
                     </li>
