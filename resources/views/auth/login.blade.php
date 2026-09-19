@@ -68,14 +68,6 @@
                                 @enderror
                             </div>
 
-                            <div class="form-check mb-4">
-                                <input class="form-check-input" type="checkbox" value="1" id="remember"
-                                    name="remember">
-
-                                <label class="form-check-label" for="remember">
-                                    Ingat saya
-                                </label>
-                            </div>
 
                             <button type="submit" class="btn btn-primary w-100">
                                 Login
