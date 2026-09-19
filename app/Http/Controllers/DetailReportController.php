@@ -188,11 +188,11 @@ class DetailReportController extends Controller
         * Susun pesan/caption yang akan dikirim.
         */
         $message = implode("\n", [
-            "Halo {$petugas->nama},",
-            "",
-            "Ada temuan pada data KRT: {$report->nama_krt}.",
-            "",
-            "Temuan:",
+            // "Halo {$petugas->nama},",
+            // "",
+            // "Ada temuan pada data KRT: {$report->nama_krt}.",
+            // "",
+            // "Temuan:",
             $detailReport->keterangan_error,
         ]);
 
