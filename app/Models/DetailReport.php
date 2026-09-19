@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['report_id', 'keterangan_error', 'foto', 'respon_petugas', 'status'])]
 class DetailReport extends Model
@@ -17,5 +18,13 @@ class DetailReport extends Model
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);
+    }
+
+    public function whatsappMessages(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            WhatsappMessage::class,
+            'detail_report_whatsapp_message'
+        )->withTimestamps();
     }
 }

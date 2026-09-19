@@ -13,4 +13,9 @@ class Petugas extends Model
     {
         return $this->hasMany(Report::class);
     }
+
+    public function whatsappMessages(): HasMany
+    {
+        return $this->hasMany(WhatsappMessage::class);
+    }
 }
