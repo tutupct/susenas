@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreReportRequest;
+use App\Http\Requests\UpdateReportRequest;
 use App\Models\Petugas;
 use App\Models\Report;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -121,44 +121,9 @@ class ReportController extends Controller
         ]);
     }
 
-    public function update(Request $request, Petugas $petugas)
+    public function update(UpdateReportRequest $request, Petugas $petugas)
     {
-        $validated = $request->validate([
-            'reports' => [
-                'required',
-                'array',
-                'min:1',
-            ],
-
-            'reports.*.id' => [
-                'nullable',
-                'integer',
-                'distinct'
-            ],
-
-            'reports.*.nama_krt' => [
-                'required',
-                'string',
-                'min:2',
-                'max:150',
-            ],
-
-            'reports.*.urutan' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-        ], [
-            'reports.required' => 'Minimal satu KRT harus diisi.',
-            'reports.min' => 'Minimal satu KRT harus diisi.',
-
-            'reports.*.nama_krt.required' => 'Nama KRT wajib diisi.',
-            'reports.*.nama_krt.min' => 'Nama KRT minimal 2 karakter.',
-            'reports.*.nama_krt.max' => 'Nama KRT maksimal 150 karakter.',
-
-            'reports.*.urutan.required' => 'Urutan KRT wajib diisi.',
-            'reports.*.urutan.min' => 'Urutan KRT tidak valid.',
-        ]);
+        $validated = $request->validated();
 
         $existingReports = $petugas->reports()
             ->withCount('detailReports')
