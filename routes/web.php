@@ -11,6 +11,9 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('reports.index');
+    });
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::resource('/petugas', PetugasController::class);
