@@ -53,21 +53,10 @@ class DetailReportController extends Controller
             ->with('success', 'Temuan berhasil ditambahkan.');
     }
 
-    public function update(
-        Request $request,
-        Report $report,
-        DetailReport $detailReport
-    ) {
-        /*
-     * Pastikan detail report memang milik report
-     * yang sedang diedit.
-     *
-     * Ini penting untuk mencegah manipulasi URL/ID.
-     */
-        abort_unless(
-            $detailReport->report_id === $report->id,
-            404
-        );
+    public function update(Request $request,        Report $report, DetailReport $detailReport)
+    {
+        abort_unless($detailReport->report_id === $report->id, 404);
+        abort_unless($detailReport->status === DetailReport::STATUS_DRAFT, 403, 'Temuan yang sudah dikirim tidak dapat diedit.');
 
         $validated = $request->validate([
             'keterangan_error' => [

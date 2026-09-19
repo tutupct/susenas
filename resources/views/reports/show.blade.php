@@ -132,14 +132,15 @@
                                     </span>
                             @endswitch
 
-                            <button type="button" class="btn btn-sm btn-outline-secondary" @click="editing = true">
-                                Edit
-                            </button>
+                            @if ($detail->status === \App\Models\DetailReport::STATUS_DRAFT)
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @click="editing = true">
+                                    Edit
+                                </button>
+                            @endif
 
                             @if ($detail->status === \App\Models\DetailReport::STATUS_DRAFT)
                                 <form action="{{ route('reports.details.send', [$report, $detail]) }}" method="POST"
-                                    class="d-inline"
-                                    onsubmit="return confirm('Kirim temuan ini ke WhatsApp petugas?');">
+                                    class="d-inline" onsubmit="return confirm('Kirim temuan ini ke WhatsApp petugas?');">
                                     @csrf
 
                                     <button type="submit" class="btn btn-sm btn-outline-success">
