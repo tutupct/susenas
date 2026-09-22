@@ -8,10 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Services\GowaService;
+use App\Services\ImageCompressionService;
 
 class DetailReportController extends Controller
 {
-    public function store(Request $request, Report $report)
+    public function store(Request $request, Report $report, ImageCompressionService $imageCompressor)
     {
         $validated = $request->validate([
             'keterangan_error' => [
@@ -37,9 +38,17 @@ class DetailReportController extends Controller
 
         $fotoPath = null;
 
+        // if ($request->hasFile('foto')) {
+        //     $fotoPath = $request->file('foto')
+        //         ->store("detail-reports/{$report->id}", 'public');
+        // }
+
         if ($request->hasFile('foto')) {
-            $fotoPath = $request->file('foto')
-                ->store("detail-reports/{$report->id}", 'public');
+            $fotoPath = $imageCompressor->compressAndStore(
+                $request->file('foto'),
+                "detail-reports/{$report->id}",
+                'public'
+            );
         }
 
         $report->detailReports()->create([
@@ -53,7 +62,7 @@ class DetailReportController extends Controller
             ->with('success', 'Temuan berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Report $report, DetailReport $detailReport)
+    public function update(Request $request, Report $report, DetailReport $detailReport, ImageCompressionService $imageCompressor)
     {
         abort_unless($detailReport->report_id === $report->id, 404);
         abort_unless($detailReport->status === DetailReport::STATUS_DRAFT, 403, 'Temuan yang sudah dikirim tidak dapat diedit.');
@@ -86,9 +95,16 @@ class DetailReportController extends Controller
         /*
         * Upload foto baru hanya jika user memilih file.
         */
+        // if ($request->hasFile('foto')) {
+        //     $newFotoPath = $request->file('foto')
+        //         ->store("detail-reports/{$report->id}", 'public');
+        // }
         if ($request->hasFile('foto')) {
-            $newFotoPath = $request->file('foto')
-                ->store("detail-reports/{$report->id}", 'public');
+            $newFotoPath = $imageCompressor->compressAndStore(
+                $request->file('foto'),
+                "detail-reports/{$report->id}",
+                'public'
+            );
         }
 
         try {
