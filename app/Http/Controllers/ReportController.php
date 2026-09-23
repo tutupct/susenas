@@ -311,6 +311,17 @@ class ReportController extends Controller
      */
     public function destroy(Report $report)
     {
-        //
+        if ($report->detailReports()->exists()) {
+            return back()
+                ->withErrors([
+                    'report' => "KRT {$report->nama_krt} tidak dapat dihapus karena sudah memiliki temuan.",
+                ]);
+        }
+
+        $report->delete();
+
+        return redirect()
+            ->route('reports.index')
+            ->with('success', "Report KRT {$report->nama_krt} berhasil dihapus.");
     }
 }

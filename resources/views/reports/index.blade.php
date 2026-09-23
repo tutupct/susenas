@@ -1,5 +1,110 @@
 @extends('layouts.app')
 
+@push('styles')
+    <style>
+        .reports-summary {
+            list-style: none;
+        }
+
+        .reports-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .reports-summary-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: .35rem;
+        }
+
+        .reports-summary-meta .badge {
+            font-weight: 500;
+        }
+
+        .reports-petugas {
+            margin: .75rem;
+            overflow: hidden;
+            border: 1px solid var(--bs-border-color) !important;
+            border-radius: .5rem;
+            background-color: var(--bs-body-bg);
+        }
+
+        @media (max-width: 575.98px) {
+            .reports-petugas {
+                margin: .5rem;
+            }
+
+            .reports-summary {
+                align-items: flex-start !important;
+                flex-direction: column;
+                padding: 1rem !important;
+            }
+
+            .reports-summary-meta {
+                justify-content: flex-start;
+            }
+
+            .reports-table thead {
+                display: none;
+            }
+
+            .reports-table tbody tr {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: .25rem .75rem;
+                padding: .85rem 1rem;
+                border-bottom: 1px solid var(--bs-border-color);
+            }
+
+            .reports-table tbody tr:last-child {
+                border-bottom: 0;
+            }
+
+            .reports-table tbody td {
+                border: 0;
+                padding: 0;
+            }
+
+            .reports-table .report-order {
+                color: var(--bs-secondary-color);
+                font-size: .8rem;
+                grid-column: 1 / -1;
+            }
+
+            .reports-table .report-krt {
+                grid-column: 1 / -1;
+            }
+
+            .reports-table .report-count {
+                align-self: center;
+            }
+
+            .reports-table .report-status {
+                grid-column: 1 / -1;
+                margin-top: .35rem;
+            }
+
+            .reports-table .report-action {
+                grid-column: 1 / -1;
+                padding: .35rem 0 0;
+                text-align: right;
+            }
+
+            .reports-table .report-action .btn {
+                width: 100%;
+            }
+
+            .reports-table .report-action>div {
+                flex-direction: column;
+            }
+
+            .reports-table .report-action form {
+                width: 100%;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
@@ -87,15 +192,15 @@
                 ];
             @endphp
 
-            <details class="border-bottom">
-                <summary class="d-flex justify-content-between align-items-center gap-3 px-4 py-3"
-                    style="cursor: pointer; list-style: none;">
+            <details class="reports-petugas">
+                <summary class="reports-summary d-flex justify-content-between align-items-center gap-3 px-4 py-3"
+                    style="cursor: pointer;">
                     <div>
                         <div class="fw-semibold">{{ $petugas->nama }}</div>
                         <div class="text-muted small">SLS: {{ $petugas->sls }}</div>
                     </div>
 
-                    <div class="text-end text-nowrap">
+                    <div class="reports-summary-meta text-end">
                         <span class="badge text-bg-light">
                             {{ $petugasReports->count() }} KRT
                         </span>
@@ -124,8 +229,14 @@
                     </div>
                 </summary>
 
+                <div class="d-flex justify-content-end px-3 px-md-4 py-2 border-top bg-light">
+                    <a href="{{ route('reports.edit', $petugas) }}" class="btn btn-sm btn-outline-secondary">
+                        Edit Report
+                    </a>
+                </div>
+
                 <div class="table-responsive border-top">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="reports-table table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4" width="80">Urutan</th>
@@ -139,15 +250,15 @@
                         <tbody>
                             @foreach ($petugasReports as $report)
                                 <tr>
-                                    <td class="ps-4">
+                                    <td class="report-order ps-4">
                                         <span class="fw-semibold">{{ $report->urutan }}</span>
                                     </td>
 
-                                    <td>
+                                    <td class="report-krt">
                                         <div class="fw-semibold">{{ $report->nama_krt }}</div>
                                     </td>
 
-                                    <td>
+                                    <td class="report-count">
                                         @if ($report->detail_reports_count > 0)
                                             <span class="badge text-bg-danger">
                                                 {{ $report->detail_reports_count }} temuan
@@ -157,7 +268,7 @@
                                         @endif
                                     </td>
 
-                                    <td>
+                                    <td class="report-status">
                                         @if ($report->detail_reports_count > 0)
                                             <div class="d-flex flex-wrap gap-1">
                                                 @if ($report->draft_count > 0)
@@ -185,11 +296,25 @@
                                         @endif
                                     </td>
 
-                                    <td class="pe-4">
-                                        <a href="{{ route('reports.show', $report) }}"
-                                            class="btn btn-sm btn-outline-primary">
-                                            Detail
-                                        </a>
+                                    <td class="report-action pe-4">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a href="{{ route('reports.show', $report) }}"
+                                                class="btn btn-sm btn-outline-primary">
+                                                Detail
+                                            </a>
+
+                                            @if ($report->detail_reports_count === 0)
+                                                <form action="{{ route('reports.destroy', $report) }}" method="POST"
+                                                    onsubmit="return confirm('Yakin ingin menghapus report KRT ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
