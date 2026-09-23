@@ -439,12 +439,16 @@
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-outline-primary" @click="showForm = !showForm">
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                        @click="
+                            showForm = true;
+                            $nextTick(() => $refs.form.scrollIntoView({ behavior: 'smooth' }));
+                        ">
                         + Tambah Temuan
                     </button>
                 </div>
 
-                <div x-show="showForm" x-cloak class="mt-3">
+                <div x-show="showForm" x-cloak class="mt-3" x-ref="form">
 
                     <form action="{{ route('reports.details.store', $report) }}" method="POST"
                         enctype="multipart/form-data">
