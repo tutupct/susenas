@@ -84,7 +84,8 @@
             }
 
             const modal = document.createElement('div');
-            modal.className = 'position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-none align-items-center justify-content-center p-3';
+            modal.className =
+                'position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-none align-items-center justify-content-center p-3';
             modal.style.zIndex = '2000';
             modal.innerHTML = `
                 <div class="bg-white rounded-3 shadow w-100" style="max-width:900px;max-height:95vh;overflow-y:auto;">
@@ -257,7 +258,9 @@
                 dataTransfer.items.add(file);
                 activeInput.files = dataTransfer.files;
 
-                activeInput.dispatchEvent(new Event('change', { bubbles: true }));
+                activeInput.dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
             };
 
             const validateAndOpen = (input, file) => {
@@ -318,6 +321,10 @@
                 wrapper.appendChild(cameraInput);
 
                 input.addEventListener('change', event => {
+                    if (!event.isTrusted) {
+                        return;
+                    }
+
                     validateAndOpen(input, event.target.files?.[0]);
                 });
             });
@@ -413,8 +420,9 @@
 
                     const file = new File(
                         [blob],
-                        `temuan-${Date.now()}.jpg`,
-                        { type: 'image/jpeg' }
+                        `temuan-${Date.now()}.jpg`, {
+                            type: 'image/jpeg'
+                        }
                     );
 
                     setFile(file);
