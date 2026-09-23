@@ -37,6 +37,12 @@ class ReportController extends Controller
         $reportsQuery = Report::query()
             ->with('petugas')
             ->withCount('detailReports')
+            ->withCount([
+                'detailReports as draft_count' => fn($query) => $query->where('status', DetailReport::STATUS_DRAFT),
+                'detailReports as terkirim_count' => fn($query) => $query->where('status', DetailReport::STATUS_TERKIRIM),
+                'detailReports as diperbaiki_count' => fn($query) => $query->where('status', DetailReport::STATUS_DIPERBAIKI),
+                'detailReports as selesai_count' => fn($query) => $query->where('status', DetailReport::STATUS_SELESAI),
+            ])
             ->orderBy('petugas_id')
             ->orderBy('urutan');
 

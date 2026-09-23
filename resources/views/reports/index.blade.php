@@ -79,6 +79,12 @@
             @php
                 $petugas = $petugasReports->first()->petugas;
                 $totalTemuan = $petugasReports->sum('detail_reports_count');
+                $statusCounts = [
+                    'draft' => $petugasReports->sum('draft_count'),
+                    'terkirim' => $petugasReports->sum('terkirim_count'),
+                    'diperbaiki' => $petugasReports->sum('diperbaiki_count'),
+                    'selesai' => $petugasReports->sum('selesai_count'),
+                ];
             @endphp
 
             <details class="border-bottom">
@@ -98,6 +104,22 @@
                             <span class="badge text-bg-danger">
                                 {{ $totalTemuan }} temuan
                             </span>
+
+                            @if ($statusCounts['draft'] > 0)
+                                <span class="badge text-bg-secondary">{{ $statusCounts['draft'] }} draft</span>
+                            @endif
+
+                            @if ($statusCounts['terkirim'] > 0)
+                                <span class="badge text-bg-warning">{{ $statusCounts['terkirim'] }} terkirim</span>
+                            @endif
+
+                            @if ($statusCounts['diperbaiki'] > 0)
+                                <span class="badge text-bg-info">{{ $statusCounts['diperbaiki'] }} diperbaiki</span>
+                            @endif
+
+                            @if ($statusCounts['selesai'] > 0)
+                                <span class="badge text-bg-success">{{ $statusCounts['selesai'] }} selesai</span>
+                            @endif
                         @endif
                     </div>
                 </summary>
